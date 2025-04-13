@@ -11,8 +11,8 @@ A continuación se explica cómo redirigir cada uno de estos flujos:
 ## Redirección de salida
 
 - `> log.txt`: redirige la salida estándar (`stdout`) al archivo `log.txt`.
-- `2> error.txt`: redirige la salida de errores (`stderr`) al archivo `error.txt`.
 - `2>&1`: redirige `stderr` al mismo destino que `stdout`.
+- `0< input.txt`: redirige el contenido `input.txt` al `stdin`
 
 ## Comando para ejecutar los programas
 
