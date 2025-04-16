@@ -36,3 +36,54 @@ stop.tv_sec - start.tv_sec + (double)(stop.tv_usec - start.tv_usec) / 1000000
 Se optó por ```<sys/time.h>``` en lugar de ```<time.h>```, ya que con ```clock()``` de ```<time.h>``` solo se obtiene el tiempo de CPU del proceso que ejecuta el programa, y no el tiempo total que tarda el programa en ejecutarse.
 
 Como desventaja de ```<sys/time.h>``` es que mide el tiempo en el sistema del programa ejecutado, incluyendo tanto el tiempo de CPU como el tiempo de espera. Se investigará cómo obtener solo el tiempo de CPU del programa evaluado.
+
+# Manejo de cadenas en c sin string.h
+
+En c la cadenas terminan con un caracter nulo '\0' conciendo esto el obtener datos como el tamaña de las cadenas es muy sencillo, simplemente de debe iterar hasta econtrarse con este.
+
+de momente para la libreria solo se vio necesario implementar el obtener el tamaño, concatenar y conparar, a contuacion sus implementaciones 
+
+## Tamaño de la cadena
+```c
+unsigned int strLen(const char* str){
+        unsigned int length = 0;
+        //while(*str) -> mientras el caracter no sea nulo
+        //en c cualquier n!=0 es verdarero
+        while(*str){
+                length++;
+                str++;
+        }
+        return length;
+}
+```
+## Concatenar cadenas
+```c
+char* concat(const char* str1, const char* str2){
+        int str1Len = strLen(str1);
+        int str2len = strLen(str2);
+        char* result = malloc((str1Len + str2len) * sizeof(char));
+        for (int i = 0; i < str1Len; i++) {
+                result[i] = str1[i];
+        }
+        
+        for (int i = 0; i < str2len; i++) {
+                result[i + str1Len] = str2[i];
+        }
+
+        result[str1Len + str2len] = 0;//marcar el fin de la cadena, '\0' = 0
+        return result;
+}
+```
+
+## Comparar cadenas
+```c
+int strComp(const char* str1, const char* str2){
+        //*str1 && *str2 -> parar al encontrar el caracter nulo, basta con cualquiera de los dos
+        //en c cualquier numero != 0 es verdarero
+        while (*str1 && *str2 && *str1 == *str2) {
+                str1++;
+                str2++;
+        }
+        return *str1 - *str2;
+}
+```
