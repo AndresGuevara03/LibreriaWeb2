@@ -37,11 +37,12 @@ Se optó por ```<sys/time.h>``` en lugar de ```<time.h>```, ya que con ```clock(
 
 Como desventaja de ```<sys/time.h>``` es que mide el tiempo en el sistema del programa ejecutado, incluyendo tanto el tiempo de CPU como el tiempo de espera. Se investigará cómo obtener solo el tiempo de CPU del programa evaluado.
 
-# Manejo de cadenas en c sin string.h
+# Manejo de cadenas en C sin `string.h`
 
-En c la cadenas terminan con un caracter nulo '\0' conciendo esto el obtener datos como el tamaña de las cadenas es muy sencillo, simplemente de debe iterar hasta econtrarse con este.
+En C, las cadenas de caracteres terminan con un carácter nulo `'\0'`. Conociendo esto, obtener datos como el tamaño de una cadena es muy sencillo: simplemente se debe iterar hasta encontrar este carácter.
 
-de momente para la libreria solo se vio necesario implementar el obtener el tamaño, concatenar y conparar, a contuacion sus implementaciones 
+Por el momento, para la librería solo se consideró necesario implementar las siguientes funciones: obtener el tamaño, concatenar y comparar cadenas. A continuación, se presentan sus implementaciones.
+ 
 
 ## Tamaño de la cadena
 ```c
