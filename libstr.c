@@ -36,3 +36,21 @@ int strComp(const char* str1, const char* str2){
         }
         return *str1 - *str2;
 }
+
+char* intToStr(unsigned int num){
+        int aux = 1;
+        int strSize = 1;
+        while(num/aux >= 10){
+                aux *= 10;
+                strSize++;
+        }
+        char* str = malloc((strSize+1) * sizeof(char));
+        int i;
+        for(i = 0;i < strSize; i++){
+                str[i] = (char)(num/aux + 48);
+                num %= aux;
+                aux /= 10;
+        }
+        str[i] = 0;
+        return str;
+}

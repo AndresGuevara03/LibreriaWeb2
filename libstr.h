@@ -2,6 +2,7 @@
 #define LIBSTR_H
 
 //return length of string
+#include <stdlib.h>
 unsigned int strLen(const char* str);
 //return a new string that begin with str1 and end with str2
 char* concat(const char* str1, const char* str2);
@@ -11,5 +12,6 @@ char* concat(const char* str1, const char* str2);
 * lexicographic order
 */
 int strComp(const char* str1, const char* str2);
-
+//
+char* intToStr(int num);
 #endif
