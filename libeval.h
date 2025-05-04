@@ -6,10 +6,9 @@
 #include <libstr.h>
 #include <sys/time.h>
 #include <cjson/cJSON.h>
-void setInputs(FILE* inputSource , FILE* inputTarget);
-void getStatus(char** status, FILE* outputSource , FILE* outputTarget, int ms, int timeLimit);
-int runSolution(const char* problemName);
-void openFile(const char* problemName, FILE** inputFile, FILE** outputFile);
+void setInputs(const char** lines, int cantLines, FILE* inputTarget);
+int getStatus(char** status, const char** outputSource, int cantOutput, FILE* outputTarget);
+int runSolution(const char* compile, const char* run);
 void createSolution(const char* problemName, const char* content);
-cJSON* getVeredict(const char* problemName, int timeLimit);
+cJSON* getVeredict(const char* problemName, const char*** inputs, const char*** outputs,int cantTest, int* inputsCant, int* outputsCant, int timeLimit);
 #endif

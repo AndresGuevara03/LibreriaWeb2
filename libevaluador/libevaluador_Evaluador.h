@@ -10,34 +10,10 @@ extern "C" {
 /*
  * Class:     libevaluador_Evaluador
  * Method:    evaluar
- * Signature: (Ljava/lang/String;ILjava/lang/String;)Ljava/lang/String;
+ * Signature: (Ljava/lang/String;[[Ljava/lang/String;[[Ljava/lang/String;ILjava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_libevaluador_Evaluador_evaluar__Ljava_lang_String_2ILjava_lang_String_2
-  (JNIEnv *, jobject, jstring, jint, jstring);
-
-/*
- * Class:     libevaluador_Evaluador
- * Method:    evaluar
- * Signature: (Ljava/lang/String;I[B)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_libevaluador_Evaluador_evaluar__Ljava_lang_String_2I_3B
-  (JNIEnv *, jobject, jstring, jint, jbyteArray);
-
-/*
- * Class:     libevaluador_Evaluador
- * Method:    cargarProblema
- * Signature: (Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_libevaluador_Evaluador_cargarProblema__Ljava_lang_String_2ILjava_lang_String_2Ljava_lang_String_2
-  (JNIEnv *, jobject, jstring, jint, jstring, jstring);
-
-/*
- * Class:     libevaluador_Evaluador
- * Method:    cargarProblema
- * Signature: (Ljava/lang/String;I[B[B)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_libevaluador_Evaluador_cargarProblema__Ljava_lang_String_2I_3B_3B
-  (JNIEnv *, jobject, jstring, jint, jbyteArray, jbyteArray);
+JNIEXPORT jstring JNICALL Java_libevaluador_Evaluador_evaluar
+  (JNIEnv *, jobject, jstring, jobjectArray, jobjectArray, jint, jstring);
 
 #ifdef __cplusplus
 }

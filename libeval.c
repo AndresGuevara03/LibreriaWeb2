@@ -2,99 +2,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void setInputs(FILE* inputSource , FILE* inputTarget){
-  char* line = NULL;
-  size_t aux;
-  while(getline(&line, &aux, inputSource) != -1 && strComp(line, "\n")){
-    fputs(line, inputTarget);
+void setInputs(const char** lines, int cantLines, FILE* inputTarget){
+  char* line;
+  for(int i = 0; i < cantLines; i++){
+    fputs(lines[i], inputTarget);
+    fputc('\n', inputTarget);
   }
   fclose(inputTarget);
 }
 
-void getStatus(char** status, FILE* outputSource , FILE* outputTarget, int ms, int timeLimit){
-  char* answer = NULL;
+int getStatus(char** status, const char** outputSource, int cantOutput, FILE* outputTarget){
   char* out = NULL;
   size_t aux;
   int wrong = 0;
-  char* temp = NULL;
+  char* temp;
   strCopy(&status[0], "");
   strCopy(&status[1], "");
-  while(getline(&answer, &aux, outputSource) != -1 && strComp(answer, "\n")){
+  for(int i = 0; i < cantOutput; i++){
     getline(&out, &aux, outputTarget);
-    wrong |= strComp(answer, out);
     size_t outLen = strLen(out);
-    out[outLen - 1] = ';';
+    out[outLen - 1] = '\0';
+    wrong |= strComp(outputSource[i], out);
     strCopy(&temp, out);
     concat(&status[0], temp);
+    concat(&status[1], outputSource[i]);
     free(temp);
-    temp = NULL;
-    size_t answerLen = strLen(answer);
-    answer[answerLen - 1] = ';';
-    strCopy(&temp, answer);
-    concat(&status[1], temp);
-    free(temp);
-    temp = NULL;
   }
-  free(temp);
-  temp = NULL;
-  if(ms >= timeLimit)
-    status[2] = "Time limit exceeded";
-  else if(wrong)
-    status[2] = "Wrong answer";
-  else
-    status[2] = "Ok";
   fclose(outputTarget);
+  return wrong;
 }
 
-int runSolution(const char* problemName){
+int runSolution(const char* compile, const char* run){
   struct timeval stop, start;
-  char* compile = NULL;
-  const char* home = getenv("HOME");
-  strCopy(&compile, "javac ");
-  concat(&compile, home);
-  concat(&compile, "/libreria-web/aplicacion/");
-  concat(&compile, problemName);
-  concat(&compile, ".java");
   system(compile);
-  char* run = NULL;
-  strCopy(&run, "java -cp ");
-  concat(&run, home);
-  concat(&run, "/libreria-web/aplicacion/ ");
-  concat(&run, problemName);
-  concat(&run, " > ");
-  concat(&run, home);
-  concat(&run, "/libreria-web/aplicacion/log.txt 2>&1 0< ");
-  concat(&run, home);
-  concat(&run, "/libreria-web/aplicacion/inputs/input.txt");
   gettimeofday(&start, NULL);
-  int exitCode = system(run);
+  system(run);
   gettimeofday(&stop, NULL);
   int ms = (stop.tv_sec - start.tv_sec) * 1000 + (stop.tv_usec - start.tv_usec) / 1000;
-  free(compile);
-  compile = NULL;
-  free(run);
-  run = NULL;
   return ms;
-}
-
-void openFile(const char* problemName, FILE** inputFile, FILE** outputFile){
-  char* inputPath = NULL;
-  const char* home = getenv("HOME");
-  strCopy(&inputPath, home);
-  concat(&inputPath,"/libreria-web/aplicacion/inputs/");
-  concat(&inputPath, problemName);
-  concat(&inputPath, ".txt");
-  char* outputPath = NULL;
-  strCopy(&outputPath, home);
-  concat(&outputPath,"/libreria-web/aplicacion/outputs/");
-  concat(&outputPath, problemName);
-  concat(&outputPath, ".txt");
-  *inputFile = fopen(inputPath, "r");
-  *outputFile = fopen(outputPath, "r");
-  free(inputPath);
-  inputPath = NULL;
-  free(outputPath);
-  outputPath = NULL;
 }
 
 void createSolution(const char* problemName, const char* content){
@@ -109,32 +54,51 @@ void createSolution(const char* problemName, const char* content){
   fclose(solutionFile);
 }
 
-cJSON* getVeredict(const char* problemName, int timeLimit){
+cJSON* getVeredict(const char* problemName, const char*** inputs, const char*** outputs,int cantTest, int* inputsCant, int* outputsCant, int timeLimit){
   int numTest = 1;
   int worstMs = 0;
   const char* home = getenv("HOME");
+  char* compile = NULL;
+  strCopy(&compile, "javac ");
+  concat(&compile, home);
+  concat(&compile, "/libreria-web/aplicacion/");
+  concat(&compile, problemName);
+  concat(&compile, ".java");
+  char* run = NULL;
+  strCopy(&run, "java -cp ");
+  concat(&run, home);
+  concat(&run, "/libreria-web/aplicacion/ ");
+  concat(&run, problemName);
+  concat(&run, " > ");
+  concat(&run, home);
+  concat(&run, "/libreria-web/aplicacion/log.txt 2>&1 0< ");
+  concat(&run, home);
+  concat(&run, "/libreria-web/aplicacion/input.txt");
   char** statusTemp = malloc(4 * sizeof(char*));
   cJSON* veredict = cJSON_CreateObject();
   cJSON* statuses = cJSON_AddArrayToObject(veredict, "statuses");
-  FILE* inputs;
-  FILE* outputs;
-  openFile(problemName, &inputs, &outputs);
   struct timeval stop, start;
-  while(!feof(inputs)){
+  for(int i = 0; i < cantTest; i++){
     cJSON* status = cJSON_CreateObject();
-    char* inputPath = NULL;
-    char* outputPath = NULL;
+    char* inputPath;
+    char* outputPath;
     strCopy(&inputPath, home);
-    concat(&inputPath, "/libreria-web/aplicacion/inputs/input.txt");
+    concat(&inputPath, "/libreria-web/aplicacion/input.txt");
     FILE* input = fopen(inputPath, "w");
-    setInputs(inputs, input);
+    setInputs(inputs[i],inputsCant[i], input);
     strCopy(&outputPath, home);
     concat(&outputPath, "/libreria-web/aplicacion/log.txt");
     FILE* output = fopen(outputPath, "r");
-    int ms = runSolution(problemName);
+    int ms = runSolution(compile, run);
     if(ms > worstMs) worstMs = ms;
-    getStatus(statusTemp, outputs, output, ms, timeLimit);
-    cJSON_AddNumberToObject(status, "testCase", numTest);
+    int wrong = getStatus(statusTemp, outputs[i], outputsCant[i], output);
+    if(ms >= timeLimit)
+      statusTemp[2] = "Time limit exceeded";
+    else if(wrong)
+      statusTemp[2] = "Wrong answer";
+    else
+      statusTemp[2] = "Ok";
+    cJSON_AddNumberToObject(status, "testCase", i + 1);
     cJSON_AddStringToObject(status, "output", statusTemp[0]);
     cJSON_AddStringToObject(status, "answer", statusTemp[1]);
     cJSON_AddNumberToObject(status, "time", ms);
@@ -145,18 +109,13 @@ cJSON* getVeredict(const char* problemName, int timeLimit){
       cJSON_AddStringToObject(veredict, "status", statusTemp[2]);
       cJSON_AddNumberToObject(veredict, "time", worstMs);
       free(statusTemp);
-      statusTemp = NULL;
-      fclose(inputs);
-      fclose(outputs);
       return veredict;
     }
-    numTest++;
   }
+  free(compile);
+  free(run);
   cJSON_AddStringToObject(veredict, "status", "Accepted");
-      cJSON_AddNumberToObject(veredict, "time", worstMs);
+  cJSON_AddNumberToObject(veredict, "time", worstMs);
   free(statusTemp);
-  statusTemp = NULL;
-  fclose(inputs);
-  fclose(outputs);
   return veredict;
 }
