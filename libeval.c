@@ -1,4 +1,6 @@
 #include "libeval.h"
+#include <cjson/cJSON.h>
+#include <libstr.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -11,22 +13,21 @@ void setInputs(const char** lines, int cantLines, FILE* inputTarget){
   fclose(inputTarget);
 }
 
-int getStatus(char** status, const char** outputSource, int cantOutput, FILE* outputTarget){
+int getStatus(cJSON* status, const char** outputSource, int cantOutput, FILE* outputTarget){
   char* out = NULL;
   size_t aux;
   int wrong = 0;
-  char* temp;
-  strCopy(&status[0], "");
-  strCopy(&status[1], "");
+  cJSON* outputs = cJSON_AddArrayToObject(status, "outputs");
+  cJSON* answers = cJSON_AddArrayToObject(status, "answers");
   for(int i = 0; i < cantOutput; i++){
     getline(&out, &aux, outputTarget);
     size_t outLen = strLen(out);
     out[outLen - 1] = '\0';
     wrong |= strComp(outputSource[i], out);
-    strCopy(&temp, out);
-    concat(&status[0], temp);
-    concat(&status[1], outputSource[i]);
-    free(temp);
+    cJSON* outJson = cJSON_CreateString(out);
+    cJSON* ansJson = cJSON_CreateString(outputSource[i]);
+    cJSON_AddItemToArray(outputs, outJson);
+    cJSON_AddItemToArray(answers, ansJson);
   }
   fclose(outputTarget);
   return wrong;
@@ -91,22 +92,21 @@ cJSON* getVeredict(const char* problemName, const char*** inputs, const char*** 
     FILE* output = fopen(outputPath, "r");
     int ms = runSolution(run);
     if(ms > worstMs) worstMs = ms;
-    int wrong = getStatus(statusTemp, outputs[i], outputsCant[i], output);
-    if(ms >= timeLimit)
-      statusTemp[2] = "Time limit exceeded";
-    else if(wrong)
-      statusTemp[2] = "Wrong answer";
-    else
-      statusTemp[2] = "Ok";
     cJSON_AddNumberToObject(status, "testCase", i + 1);
-    cJSON_AddStringToObject(status, "output", statusTemp[0]);
-    cJSON_AddStringToObject(status, "answer", statusTemp[1]);
+    int wrong = getStatus(status, outputs[i], outputsCant[i], output);
+    char* statusItem;
+    if(ms >= timeLimit)
+      strCopy(&statusItem,"Time limit exceeded");
+    else if(wrong)
+      strCopy(&statusItem,"Wrong answer");
+    else
+      strCopy(&statusItem,"Ok");
     cJSON_AddNumberToObject(status, "time", ms);
-    cJSON_AddStringToObject(status, "status", statusTemp[2]);
+    cJSON_AddStringToObject(status, "status", statusItem);
     cJSON_AddItemToArray(statuses, status);
-    if(!strComp(statusTemp[2], "Wrong answer") 
-        || !strComp(statusTemp[2], "Time limit exceeded")){
-      cJSON_AddStringToObject(veredict, "status", statusTemp[2]);
+    if(!strComp(statusItem, "Wrong answer") 
+        || !strComp(statusItem, "Time limit exceeded")){
+      cJSON_AddStringToObject(veredict, "status", statusItem);
       cJSON_AddNumberToObject(veredict, "time", worstMs);
       free(statusTemp);
       return veredict;
