@@ -32,9 +32,8 @@ int getStatus(char** status, const char** outputSource, int cantOutput, FILE* ou
   return wrong;
 }
 
-int runSolution(const char* compile, const char* run){
+int runSolution(const char* run){
   struct timeval stop, start;
-  system(compile);
   gettimeofday(&start, NULL);
   system(run);
   gettimeofday(&stop, NULL);
@@ -64,6 +63,7 @@ cJSON* getVeredict(const char* problemName, const char*** inputs, const char*** 
   concat(&compile, "/libreria-web/aplicacion/");
   concat(&compile, problemName);
   concat(&compile, ".java");
+  system(compile);
   char* run = NULL;
   strCopy(&run, "java -cp ");
   concat(&run, home);
@@ -89,7 +89,7 @@ cJSON* getVeredict(const char* problemName, const char*** inputs, const char*** 
     strCopy(&outputPath, home);
     concat(&outputPath, "/libreria-web/aplicacion/log.txt");
     FILE* output = fopen(outputPath, "r");
-    int ms = runSolution(compile, run);
+    int ms = runSolution(run);
     if(ms > worstMs) worstMs = ms;
     int wrong = getStatus(statusTemp, outputs[i], outputsCant[i], output);
     if(ms >= timeLimit)
